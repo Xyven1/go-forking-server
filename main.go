@@ -61,7 +61,6 @@ func ReadFileAndSendToAll(f *os.File, conns map[net.Conn]bool) {
 	for {
     n, err := f.Read(b)
     if err != nil {
-      fmt.Println("Error reading from file:", err)
       continue
     }
     fmt.Printf("\r%s\tNum Clients: %d\tNum Mavlink Packets: %d", time.Now().Format("2006-01-02 15:04:05"), len(conns), c)
