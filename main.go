@@ -14,7 +14,7 @@ func main() {
 		log.Fatal("Usage: ./main <file> <port>")
 	}
 
-	f, err := os.OpenFile(args[0], os.O_RDWR, 0666);
+	f, err := os.OpenFile(args[0], os.O_RDWR, 0666)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -43,30 +43,30 @@ func main() {
 
 func HandleConnection(c net.Conn, f *os.File, conns map[net.Conn]bool) {
 	defer c.Close()
-  b := make([]byte, 1024)
-  for {
-    n, err := c.Read(b)
-    if err != nil {
-      break
-    }
-    f.Write(b[:n])
-  }
-  delete(conns, c)
+	b := make([]byte, 1024)
+	for {
+		n, err := c.Read(b)
+		if err != nil {
+			break
+		}
+		f.Write(b[:n])
+	}
+	delete(conns, c)
 }
 
 func ReadFileAndSendToAll(f *os.File, conns map[net.Conn]bool) {
-  fmt.Println("Loading file")
+	fmt.Println("Loading file")
 	b := make([]byte, 1024)
-  c:=0
+	c := 0
 	for {
-    n, err := f.Read(b)
-    if err != nil {
-      continue
-    }
-    fmt.Printf("\r%s\tNum Clients: %d\tNum Mavlink Packets: %d", time.Now().Format("2006-01-02 15:04:05"), len(conns), c)
-    c++
-    for conn := range conns {
-      conn.Write(b[:n])
-    }
+		n, err := f.Read(b)
+		if err != nil {
+			continue
+		}
+		fmt.Printf("\r%s\tNum Clients: %d\tNum Mavlink Packets: %d", time.Now().Format("2006-01-02 15:04:05"), len(conns), c)
+		c++
+		for conn := range conns {
+			conn.Write(b[:n])
+		}
 	}
 }
