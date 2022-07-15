@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"go.bug.st/serial"
 	"log"
 	"net"
 	"os"
@@ -11,15 +12,17 @@ import (
 func main() {
 	args := os.Args[1:]
 	if len(args) != 2 {
-		log.Fatal("Usage: ./main <file> <port>")
+		log.Fatal(`Usage: ./main <file> <port>
+<file> - For windows use "COMx" for linux use "/dev/ttyx"
+<port> - The port to listen on`)
 	}
 
-	f, err := os.OpenFile(args[0], os.O_RDWR, 0666)
+	mode := &serial.Mode{}
+	f, err := serial.Open(args[0], mode)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-	defer f.Close()
 
 	l, err := net.Listen("tcp", ":"+args[1])
 	if err != nil {
@@ -41,7 +44,7 @@ func main() {
 	}
 }
 
-func HandleConnection(c net.Conn, f *os.File, conns map[net.Conn]bool) {
+func HandleConnection(c net.Conn, f serial.Port, conns map[net.Conn]bool) {
 	defer c.Close()
 	b := make([]byte, 1024)
 	for {
@@ -54,7 +57,7 @@ func HandleConnection(c net.Conn, f *os.File, conns map[net.Conn]bool) {
 	delete(conns, c)
 }
 
-func ReadFileAndSendToAll(f *os.File, conns map[net.Conn]bool) {
+func ReadFileAndSendToAll(f serial.Port, conns map[net.Conn]bool) {
 	fmt.Println("Loading file")
 	b := make([]byte, 1024)
 	c := 0
