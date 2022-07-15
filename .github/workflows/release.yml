@@ -1,39 +1,36 @@
 # This is a basic workflow to help you get started with Actions
 
-- name: Automatic Releases
-  uses: marvinpinto/action-automatic-releases@v1.2.1
----
 name: "pre-release"
-  on:
-    push:
-      branches:
-        - "main"
+on:
+  push:
+    branches:
+      - "main"
 
-  jobs:
-    pre-release:
-      name: "Pre Release"
-      runs-on: "ubuntu-latest"
+jobs:
+  pre-release:
+    name: "Pre Release"
+    runs-on: "ubuntu-latest"
 
-      steps:
-        - name: Set up Go
-          uses: actions/setup-go@v3
-          with:
-            go-version: 1.18
-            
-        - name: "Build & test"
-          run: |
-            env GOOS=windows GOARCH=amd64 go build -v -o COM2TCP.exe main.go
-            env GOOS=linux GOARCH=arm64 go build -v -o DEV2TCPArm main.go
-            env GOOS=linux GOARCH=amd64 go build -v -o DEV2TCP main.go
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: "Build & test"
+        run: |
+          env GOOS=windows GOARCH=amd64 go build -v -o COM2TCP.exe main.go
+          env GOOS=linux GOARCH=arm64 go build -v -o DEV2TCPArm main.go
+          env GOOS=linux GOARCH=amd64 go build -v -o DEV2TCP main.go
 
 
-        - uses: "marvinpinto/action-automatic-releases@latest"
-          with:
-            repo_token: "${{ secrets.GITHUB_TOKEN }}"
-            automatic_release_tag: "latest"
-            prerelease: true
-            title: "Development Build"
-            files: |
-              COM2TCP.exe
-              DEV2TCPArm
-              DEV2TVP
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Development Build"
+          files: |
+            COM2TCP.exe
+            DEV2TCPArm
+            DEV2TVP
