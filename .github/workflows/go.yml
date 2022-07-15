@@ -19,4 +19,4 @@ jobs:
         go-version: 1.18
 
     - name: Build
-      run: env GOOS=windows go build -v ./main.go -o windows
+      run: env GOOS=windows go build -v -o windows ./main.go
