@@ -19,9 +19,9 @@ jobs:
 
       - name: "Build & test"
         run: |
-          env GOOS=windows GOARCH=amd64 go build -v -o COM2TCP.exe main.go
-          env GOOS=linux GOARCH=arm64 go build -v -o DEV2TCPArm main.go
-          env GOOS=linux GOARCH=amd64 go build -v -o DEV2TCP main.go
+          env GOOS=windows GOARCH=amd64 go build -v -o COM2TCP.exe ./main.go
+          env GOOS=linux GOARCH=arm64 go build -v -o DEV2TCPArm ./main.go
+          env GOOS=linux GOARCH=amd64 go build -v -o DEV2TCP ./main.go
 
 
       - uses: "marvinpinto/action-automatic-releases@latest"
