@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
-	"go.bug.st/serial"
 	"log"
 	"net"
 	"os"
+	"path/filepath"
 	"time"
+
+	"go.bug.st/serial"
 )
 
 func main() {
@@ -17,8 +19,16 @@ func main() {
 <port> - The port to listen on`)
 	}
 
+	fs, err := filepath.Glob(args[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(fs) == 0 {
+		log.Fatal("No files found")
+	}
+
 	mode := &serial.Mode{}
-	f, err := serial.Open(args[0], mode)
+	f, err := serial.Open(fs[0], mode)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
