@@ -15,7 +15,7 @@ func main() {
 	args := os.Args[1:]
 	if len(args) != 2 {
 		log.Fatal(`Usage: ./main <file> <port>
-<file> - For windows use "COMx" for linux use "/dev/ttyx"
+<file> - For windows use "COMx" for linux use "/dev/ttyx. Globs are supported, but first file will always be used.
 <port> - The port to listen on`)
 	}
 
