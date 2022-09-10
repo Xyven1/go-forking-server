@@ -116,6 +116,7 @@ func udpBroadcast(u *WrapSync[net.UDPConn], addr net.Addr, b []byte) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	a.Port = 14550
 	u.mu.Lock()
 	u.v.WriteToUDP(b, a)
 	u.mu.Unlock()
