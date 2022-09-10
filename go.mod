@@ -1,6 +1,6 @@
 module github.com/transcendaircorp/go-forking-server
 
-go 1.18
+go 1.19
 
 require go.bug.st/serial v1.3.5
 
