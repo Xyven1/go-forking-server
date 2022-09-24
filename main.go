@@ -61,7 +61,7 @@ func main() {
 	}
 	defer l.Close()
 
-	u, err := net.ListenUDP("udp", &net.UDPAddr{IP: net.IPv4(10, 200, 10, 19), Port: 14550})
+	u, err := net.ListenUDP("udp", &net.UDPAddr{IP: nil, Port: 14550})
 	if err != nil {
 		log.Fatal(err)
 	}
