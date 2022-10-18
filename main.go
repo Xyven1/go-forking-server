@@ -36,6 +36,8 @@ func main() {
 	}
 
 	server := ForkingServer{}
+	server.addrs = make(map[string]int)
+	server.conns = make(map[net.Conn]bool)
 	server.port = args[0]
 	server.serial.mu.Lock()
 	server.startSerial()
