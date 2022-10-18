@@ -69,28 +69,36 @@ func (server *ForkingServer) startSerial() {
 	osName := runtime.GOOS
 	mode := &serial.Mode{}
 	var sn string
-	switch osName {
-	case "linux":
-		fs, err := filepath.Glob(server.port)
+	for {
+		err := func() error {
+			switch osName {
+			case "linux":
+				fs, err := filepath.Glob(server.port)
+				if err != nil {
+					return err
+				}
+				if len(fs) == 0 {
+					return fmt.Errorf("no serial ports found")
+				}
+				sn = fs[0]
+			case "windows":
+				if server.port[:3] != "COM" {
+					log.Fatal("Windows port must start with COM")
+				}
+				sn = server.port
+			default:
+				log.Fatal("Unsupported OS")
+			}
+			var err error
+			server.serial.v, err = serial.Open(sn, mode)
+			return err
+		}()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			time.Sleep(time.Second)
+		} else {
+			break
 		}
-		if len(fs) == 0 {
-			log.Fatal("No files found")
-		}
-		sn = fs[0]
-	case "windows":
-		if server.port[:3] != "COM" {
-			log.Fatal("Windows port must start with COM")
-		}
-		sn = server.port
-	default:
-		log.Fatal("Unsupported OS")
-	}
-	var err error
-	server.serial.v, err = serial.Open(sn, mode)
-	if err != nil {
-		log.Fatal(err)
 	}
 }
 
