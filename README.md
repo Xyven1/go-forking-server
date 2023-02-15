@@ -18,4 +18,4 @@ ExecStart=/root/DevToTcp /dev/ttyACM* 5050
 [Install]
 WantedBy=multi-user.target
 ```
-Then run as root `systemctl enable serial-tcp && sytemctl start serial-tcp` 
+Then run `systemctl enable serial-tcp && systemctl start serial-tcp` and authenticate. If that fails run the previous command as root.
