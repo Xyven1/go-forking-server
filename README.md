@@ -13,7 +13,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=root
-ExecStart=/root/DevToTcp /dev/ttyACM* 5050
+ExecStart=/path/to/executable /path/to/device port
 
 [Install]
 WantedBy=multi-user.target
