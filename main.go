@@ -19,11 +19,11 @@ type WrapSync[T any] struct {
 }
 
 type ForkingServer struct {
-	serial WrapSync[serial.Port]  // the serial port we are listnening on
-	udp    WrapSync[*net.UDPConn] // the udp port we are using to broadcast
-	conns  map[net.Conn]bool      // a map of all current tcp connections
-	addrs  map[string]int         // a list of the addresses of all current tcp connections
-	port   string                 // name of the serial port to connect to
+	serial WrapSync[serial.Port]       // the serial port we are listnening on
+	udp    WrapSync[*net.UDPConn]      // the udp port we are using to broadcast
+	conns  WrapSync[map[net.Conn]bool] // a map of all current tcp connections
+	addrs  WrapSync[map[string]int]    // a list of the addresses of all current tcp connections
+	port   string                      // name of the serial port to connect to
 }
 
 func main() {
@@ -36,8 +36,8 @@ func main() {
 	}
 
 	server := ForkingServer{}
-	server.addrs = make(map[string]int)
-	server.conns = make(map[net.Conn]bool)
+	server.addrs.v = make(map[string]int)
+	server.conns.v = make(map[net.Conn]bool)
 	server.port = args[0]
 	server.serial.mu.Lock()
 	server.startSerial()
@@ -112,7 +112,10 @@ func (server *ForkingServer) udpReceive() {
 			fmt.Println(err)
 			continue
 		}
-		if server.addrs[addr.IP.String()] > 0 && n > 0 {
+		server.addrs.mu.Lock()
+		present := server.addrs.v[addr.IP.String()] > 0
+		server.addrs.mu.Unlock()
+		if present && n > 0 {
 			server.serial.mu.Lock()
 			server.serial.v.Write(buf[:n])
 			server.serial.mu.Unlock()
@@ -127,8 +130,12 @@ func (server *ForkingServer) handleConnection(c net.Conn) {
 		fmt.Println(err)
 		return
 	}
-	server.addrs[a.IP.String()]++
-	server.conns[c] = true
+	server.addrs.mu.Lock()
+	server.addrs.v[a.IP.String()]++
+	server.addrs.mu.Unlock()
+	server.conns.mu.Lock()
+	server.conns.v[c] = true
+	server.conns.mu.Unlock()
 	b := make([]byte, 1024)
 	for {
 		n, err := c.Read(b)
@@ -139,8 +146,12 @@ func (server *ForkingServer) handleConnection(c net.Conn) {
 		server.serial.v.Write(b[:n])
 		server.serial.mu.Unlock()
 	}
-	server.addrs[a.IP.String()]--
-	delete(server.conns, c)
+	server.addrs.mu.Lock()
+	server.addrs.v[a.IP.String()]--
+	server.addrs.mu.Unlock()
+	server.conns.mu.Lock()
+	delete(server.conns.v, c)
+	server.conns.mu.Unlock()
 }
 
 func udpBroadcast(u *WrapSync[*net.UDPConn], r net.Addr, b []byte) {
@@ -178,18 +189,24 @@ func (server *ForkingServer) readFileAndSendToAll() {
 		}
 		server.serial.mu.Unlock()
 
+		server.conns.mu.Lock()
+		cs := len(server.conns.v)
+		server.conns.mu.Unlock()
+
 		if (o.Mode() & os.ModeCharDevice) == os.ModeCharDevice {
-			fmt.Printf("\r%s\tNum Clients: %d\tNum Mavlink Packets: %d  ", time.Now().Format("2006/01/02 15:04:05"), len(server.conns), c)
+			fmt.Printf("\r%s\tNum Clients: %d\tNum Mavlink Packets: %d  ", time.Now().Format("2006/01/02 15:04:05"), cs, c)
 		} else {
 			if time.Now().Sub(t) > time.Second*10 {
-				fmt.Printf("%s\tNum Clients: %d\tNum Mavlink Packets: %d\n", time.Now().Format("2006/01/02 15:04:05"), len(server.conns), c)
+				fmt.Printf("%s\tNum Clients: %d\tNum Mavlink Packets: %d\n", time.Now().Format("2006/01/02 15:04:05"), cs, c)
 				t = time.Now()
 			}
 		}
 		c++
-		for conn := range server.conns {
+		server.conns.mu.Lock()
+		for conn := range server.conns.v {
 			conn.Write(b[:n])
 			udpBroadcast(&server.udp, conn.RemoteAddr(), b[:n])
 		}
+		server.conns.mu.Unlock()
 	}
 }
